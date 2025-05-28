@@ -4,102 +4,40 @@
 #include "api-asm.h"
 #include <libopencm3/stm32/usart.h>
 
-void usart_setup(void);
-void usart_send_string(const char *str);
-
-
 void glitch_loop(void);
-
-
-
-
 
 #pragma GCC push_options
 #pragma GCC optimize("O0")
-#define OUTER_LOOP_CNT 300
-#define INNER_LOOP_CNT 300
+
+#define LOOP_LENGTH 300
 void glitch_loop() {
-	register volatile uint32_t i;
-	i = 0;
-
-    uint32_t f = 0x12345678;
-    uint32_t * src = &f;
-  
-    uint32_t dest[8] = {0};
-	// Trigger signal
-	__asm__("NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP;");
-	gpio_set(GPIOC, GPIO11);
-	__asm__("NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP;");
-	__asm__("NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP;");
-	__asm__("NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP;");
-	__asm__("NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP;");
-	__asm__("NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP;");
-	__asm__("NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP;");
-	__asm__("NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP;");
-	__asm__("NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP;");
-	__asm__("NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP;");
-	__asm__("NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP;");
-	__asm__("NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP;");
-	__asm__("NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP;");
-	__asm__("NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP;");
-	__asm__("NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP;");
-	__asm__("NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP;");
-	gpio_clear(GPIOC, GPIO11);
-__asm volatile(
-        "mov r0, #0\n"
-        // "mov r1, #0\n"
-        "nop; nop; nop; nop; nop; nop; nop; nop; nop; nop;"
-		"nop; nop; nop; nop; nop; nop; nop; nop; nop; nop;"
-		"nop; nop; nop; nop; nop; nop; nop; nop; nop; nop;"
-        "ldm %1, {r0}\n"
-        "nop; nop; nop; nop; nop; nop; nop; nop; nop; nop;"
-		"nop; nop; nop; nop; nop; nop; nop; nop; nop; nop;"
-		"nop; nop; nop; nop; nop; nop; nop; nop; nop; nop;"
-
-        "stm %0, {r0-r7}\n"
-        :                            // No outputs
-        : "r" (dest), "r" (&f)      // Input operands
-        :  "r0", "r1",  "memory"             // Clobber list, r1 is modified, memory is affected
-    );
-	gpio_set(GPIOC, GPIO11);
-	
-	__asm__("NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP;");
-	__asm__("NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP;");
-	__asm__("NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP;");
-	__asm__("NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP;");
-	__asm__("NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP;");
-	__asm__("NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP;");
-	__asm__("NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP;");
-	__asm__("NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP;");
-	__asm__("NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP;");
-	__asm__("NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP;");
-	__asm__("NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP;");
-	__asm__("NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP;");
-	__asm__("NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP;");
-	__asm__("NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP;");
-	__asm__("NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP; NOP;");
-	// gpio_clear(GPIOD, GPIO2);
-	gpio_clear(GPIOC, GPIO11);
-
-    if((dest[1] == 0x12345678) || (dest[2] == 0x12345678) || (dest[3] == 0x12345678) || (dest[4] == 0x12345678) || (dest[5] == 0x12345678)) {
-      usart_send_string("!SUC");
-
-    } else if(dest[0] != 0x12345678) {
-      usart_send_string("!SKI");
-    } else {
-      usart_send_string("!REG");
-    }
-
-
+	printf_uart("Reset!\r\n");
 	while(1) {
-		
+		uint32_t cnt = 0, i, j;
+		for (i = 0; i < LOOP_LENGTH; i++)
+		{
+			for (j = 0; j < LOOP_LENGTH; j++)
+			{
+				cnt++;
+			}
+		}
+		if (i != LOOP_LENGTH || j != LOOP_LENGTH ||
+			cnt != (LOOP_LENGTH * LOOP_LENGTH))
+		{
+			printf_uart("Glitch! %u %u %u\r\n", i, j, cnt);
+		} else {
+			printf_uart("Normal %u %u %u\r\n", i, j, cnt);
+		}
 	}
+	
+	// Endless loop
+	while(1) {}
 }
-
+#pragma GCC pop_options
 
 int main(void) {
 	// Uncomment to enable USART on PA9 (TX) and PA10 (RX)
-	// usart_setup();
+	usart_setup();
 
 	// Enable GPIOB clock
 	rcc_periph_clock_enable(RCC_GPIOB);
@@ -109,6 +47,8 @@ int main(void) {
 
 	// Clear PB13
 	gpio_clear(GPIOB, GPIO13);
+
+	glitch_loop();
 
 	while(1) {
 		// Toggle PB13

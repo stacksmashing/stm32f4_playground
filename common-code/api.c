@@ -1,5 +1,7 @@
 #include "api.h"
-
+#include <stdarg.h>
+#include <string.h>
+#include <stdio.h>
 #include <libopencm3/stm32/usart.h>
 
 /* 
@@ -15,6 +17,7 @@ void usart_setup(void) {
 	// Enable required clocks
 	rcc_periph_clock_enable(CLOCK_USART_GPIO);
     rcc_periph_clock_enable(CLOCK_USART);
+    rcc_periph_clock_enable(RCC_GPIOA);
 
     // Set USART parameters
     usart_set_baudrate(USART, 115200);
@@ -36,6 +39,15 @@ void usart_setup(void) {
 }
 
 
+void write_uart(char *buf, size_t length) {
+	for (size_t i = 0; i < length; i++) {
+        usart_send_blocking(USART, buf[i]);
+        usart_wait_send_ready (USART);
+        while(!usart_get_flag(USART, USART_SR_TC));
+	}
+}
+
+
 void usart_send_string(const char *str) {
     while (*str) {
         usart_send_blocking(USART, *str);
@@ -43,4 +55,30 @@ void usart_send_string(const char *str) {
 		while(!usart_get_flag(USART, USART_SR_TC));
         str++;
     }
+}
+
+
+void print_uart(char *buf)
+{
+	int msg_len = strlen(buf);
+
+    write_uart(buf, msg_len);
+}
+
+void printf_uart(const char *format, ...) {
+    char buffer[256];
+    va_list args;
+
+    va_start(args, format);
+    vsnprintf(buffer, sizeof(buffer), format, args);
+    va_end(args);
+
+    buffer[sizeof(buffer) - 1] = '\0';  // Ensure null-termination
+    print_uart(buffer);
+}
+
+void putchar_uart(char c) {
+	usart_send_blocking(USART, c);
+		usart_wait_send_ready (USART);
+		while(!usart_get_flag(USART, USART_SR_TC));
 }
