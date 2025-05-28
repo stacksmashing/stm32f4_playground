@@ -48,13 +48,11 @@ int main(void) {
 	// Clear PB13
 	gpio_clear(GPIOB, GPIO13);
 
+	// Enter glitch loop
 	glitch_loop();
 
 	while(1) {
 		// Toggle PB13
 		gpio_toggle(GPIOB, GPIO13);
-
-		// To also send a string on USART, uncomment this line:
-
 	}
 }
